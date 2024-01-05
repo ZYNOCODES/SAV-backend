@@ -1,7 +1,7 @@
 const User = require('../models/UserModel');
 const Transaction = require('../models/TransactionModel')
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const validator = require('validator');
 //jwt secret
 const createToken = (id) => {
@@ -27,7 +27,19 @@ const Login = async (req, res) => {
             return res.status(400).json({ message: "Email non trouvé" });
         }
         //check if password is correct
-        const match = await bcrypt.compare(Password, user.Password);
+        const match = await new Promise((resolve, reject) => {
+            const hashAlgorithm = 'sha512'; //hash algorithm 
+            const iterations = 10000; //number of iterations
+          
+            crypto.pbkdf2(Password, user.Password, iterations, 32, hashAlgorithm, (err, derivedKey) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(derivedKey.toString('hex'));
+              }
+            });
+        });
+
         if(!match){
             return res.status(400).json({ message: "Mot de passe incorrect" });
         }else{
@@ -54,8 +66,29 @@ const Signup = async (req, res) => {
     const { Email, Password, ResetPassword, Nom, Prenom, Telephone, Role, Centre, userID} = req.body;
     try{
         // hash password
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(Password, salt);
+        const salt = await new Promise((resolve, reject) => {
+            const saltLength = 16; //length of salt
+          
+            crypto.randomBytes(saltLength, (err, salt) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(salt.toString('hex'));
+              }
+            });
+        });
+        const hash = await new Promise((resolve, reject) => {
+            const hashAlgorithm = 'sha512'; //hash algorithm
+            const iterations = 10000; //number of iterations
+            
+            crypto.pbkdf2(Password, salt, iterations, 32, hashAlgorithm, (err, derivedKey) => {
+                if (err) {
+                reject(err);
+                } else {
+                resolve(derivedKey.toString('hex'));
+                }
+            });
+        });
 
         //validation
         if(!Email || !Password || !Nom || !Prenom || !Telephone || !Role || !Centre ){
@@ -256,8 +289,29 @@ const UpdateUser = async (req, res) => {
         if (Email) user.Email = Email;
         if (Password){
             // hash password
-            const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(Password, salt);
+            const salt = await new Promise((resolve, reject) => {
+                const saltLength = 16; //length of salt
+              
+                crypto.randomBytes(saltLength, (err, salt) => {
+                  if (err) {
+                    reject(err);
+                  } else {
+                    resolve(salt.toString('hex'));
+                  }
+                });
+            });
+            const hash = await new Promise((resolve, reject) => {
+                const hashAlgorithm = 'sha512'; //hash algorithm
+                const iterations = 10000; //number of iterations
+                
+                crypto.pbkdf2(Password, salt, iterations, 32, hashAlgorithm, (err, derivedKey) => {
+                    if (err) {
+                    reject(err);
+                    } else {
+                    resolve(derivedKey.toString('hex'));
+                    }
+                });
+            });
             user.Password = hash;
         }
         // save user
