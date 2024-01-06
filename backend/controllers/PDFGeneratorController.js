@@ -2,6 +2,7 @@
 const path = require('path');
 const fs = require('fs');
 const validator = require('validator');
+const { moveUp } = require('pdfkit');
 
 const PDFGenerator = async (req, res) => {
     const { BonDepot } = req.params;
@@ -35,6 +36,8 @@ const PDFGenerator = async (req, res) => {
         const bottomImagePath = path.join(__dirname, '..', 'images', 'bottomPDF.png');
         //add top image
         doc.image(topImagePath, 0, 0, { width: 495,align: 'left'});
+        const fontPath = path.join(__dirname, '..', 'fonts', 'Amiri-Bold.ttf');
+        doc.font(fontPath).fillColor("black");
 
         (BonDepot == 'BonV1') ? TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
             DateDepot, BonID, NbrSeries) : (BonDepot == 'BonV3') ? BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
@@ -123,27 +126,35 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Typ
         width: 595, 
         align: 'center',
         fontWeight: '700'
-    }).moveDown(2);
-    doc.fontSize(8);
+    }).moveDown(0.8);
+    doc.fontSize(7);
     doc.text(`SAV ${CentreDepot}`,{
         align: 'left',
     });
 
     doc.moveDown();
-    const DateDepotText = `Date de depot : .........................................................................................................................................................................................................................`;
-    const CentreDepotText = `SAV : ........................................................................................................................................................................................................................................`;
-    const EmailText = `ID client : ...................................................................................................................................................................................................................................`;
-    const NomPrenomText = `Nom et prenom : .......................................................................................................................................................................................................................`;
-    const TelephoneText = `N° Tel : .......................................................................................................................................................................................................................................`;
-    const ReferanceProduitText = `Produit : .....................................................................................................................................................................................................................................`;
-    const NbrSerieText = `N° série : ...................................................................................................................................................................................................................................`;
-    const TypePanneText = `Type de panne : .........................................................................................................................................................................................................................`;
-    const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, NbrSeries, TypePanne];
-    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, NbrSerieText, TypePanneText];
+    //arabic
+    const DateDepotARText = 'تاريخ الايداع';
+    const CentreDepotARText = 'مركز خدمة ما بعد البيع';
+    const EmailARText = 'رمز الزبون';
+    const NomPrenomARText = 'الاسم و اللقب';
+    const TelephoneARText = 'رقم الهاتف';
+    const ReferanceProduitARText = 'المنتوج';
+    const TypePanneARText = 'الإصلاح السابق';
 
+    const DateDepotText = `Date de depot : ..................................................................................................................................................................................................................`+` ${ DateDepotARText.split(' ').reverse().join(' ')}`;
+    const CentreDepotText = `SAV : .....................................................................................................................................................................................................................`+` ${ CentreDepotARText.split(' ').reverse().join(' ')}`;
+    const EmailText = `ID client : .......................................................................................................................................................................................................................... `+` ${ EmailARText.split(' ').reverse().join(' ')}`;
+    const NomPrenomText = `Nom et prenom : ..............................................................................................................................................................................................................`+` ${ NomPrenomARText.split(' ').reverse().join(' ')}`;
+    const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
+    const ReferanceProduitText = `Produit : ................................................................................................................................................................................................................................ `+` ${ ReferanceProduitARText.split(' ').reverse().join(' ')}`;
+    const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
+    const NomPrenom = `${Nom}${' '}${Prenom}`
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, TypePanne];
+    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, TypePanneText];
+    
     // Repeating the above block three times (as in your original code)
-    doc.fontSize(8);
+    doc.fontSize(7);
     for (let i = 0; i < lines2.length; i++) {
         const lineText = lines2[i];
         const lineTitle = lines1[i];
@@ -156,7 +167,7 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Typ
         doc.text(lineText, {
             width: 595,
             align: 'left',
-        }).moveDown(0.5);
+        }).moveDown(0);
     }
   
     return doc;
@@ -167,15 +178,15 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     doc.text(`Réf : FOR-SAV-24-03`,495,20,{
         align: 'center',
         width: 100,
-    }).moveDown(1.3);
+    }).moveDown(0.1);
     doc.text(`Date d’application`,495,doc.y,{
         align: 'center',
         width: 100,
-    }).moveDown(1);
+    }).moveDown(0);
     doc.text(`03/10/2023`,495,doc.y,{
         align: 'center',
         width: 100,
-    }).moveDown(1.3);
+    }).moveDown(0.1);
     doc.text(`Page 1 sur 9`,495,doc.y,{
         align: 'center',
         width: 100,
@@ -186,7 +197,13 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
         width: 595, 
         align: 'center',
         fontWeight: '700'
-    }).moveDown(2);
+    }).moveDown(0);
+    const BonDeDepotARText = 'وصل الإيداع';
+    doc.fontSize(12);
+    doc.text(`${BonDeDepotARText.split(' ').reverse().join(' ')}`, 20, 75,{ 
+        width: 595, 
+        align: 'center',
+    }).moveDown(0.8);
     doc.fontSize(7);
     doc.text(`SAV ${CentreDepot}`,{
         align: 'left',
@@ -195,21 +212,30 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     doc.fontSize(7);
     doc.text(`Ref: ${BonID}`,{
         align: 'right',
-    }).moveDown(1);
+    }).moveDown(0);
 
-    doc.moveDown();
-    const DateDepotText = `Date de depot : ......................................................................................................................................................................................................................................................`;
-    const CentreDepotText = `SAV : .....................................................................................................................................................................................................................................................................`;
-    const EmailText = `ID client : ................................................................................................................................................................................................................................................................`;
-    const NomPrenomText = `Nom et prenom : ....................................................................................................................................................................................................................................................`;
-    const TelephoneText = `N° Tel : ....................................................................................................................................................................................................................................................................`;
-    const ReferanceProduitText = `Produit : ..................................................................................................................................................................................................................................................................`;
-    const NbrSerieText = `N° série : ................................................................................................................................................................................................................................................................`;
-    const TypePanneText = `Type de panne : ......................................................................................................................................................................................................................................................`;
+    //arabic
+    const DateDepotARText = 'تاريخ الايداع';
+    const CentreDepotARText = 'مركز خدمة ما بعد البيع';
+    const EmailARText = 'رمز الزبون';
+    const NomPrenomARText = 'الاسم و اللقب';
+    const TelephoneARText = 'رقم الهاتف';
+    const ReferanceProduitARText = 'المنتوج';
+    const NbrSerieARText = 'الرقم التسلسلي';
+    const TypePanneARText = 'الإصلاح السابق';
+
+    const DateDepotText = `Date de depot : ..................................................................................................................................................................................................................`+` ${ DateDepotARText.split(' ').reverse().join(' ')}`;
+    const CentreDepotText = `SAV : .....................................................................................................................................................................................................................`+` ${ CentreDepotARText.split(' ').reverse().join(' ')}`;
+    const EmailText = `ID client : .......................................................................................................................................................................................................................... `+` ${ EmailARText.split(' ').reverse().join(' ')}`;
+    const NomPrenomText = `Nom et prenom : ..............................................................................................................................................................................................................`+` ${ NomPrenomARText.split(' ').reverse().join(' ')}`;
+    const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
+    const ReferanceProduitText = `Produit : ................................................................................................................................................................................................................................ `+` ${ ReferanceProduitARText.split(' ').reverse().join(' ')}`;
+    const NbrSerieText = `N° série : ........................................................................................................................................................................................................................ `+` ${ NbrSerieARText.split(' ').reverse().join(' ')}`;
+    const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
     const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, NbrSeries, TypePanne];
     const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, NbrSerieText, TypePanneText];
-
+    
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
     for (let i = 0; i < lines2.length; i++) {
@@ -224,10 +250,9 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
         doc.text(lineText, {
             width: 595,
             align: 'left',
-        }).moveDown(0.5);
+        }).moveDown(0);
     }
 
-    doc.moveDown(1);
     // Function to draw a checkbox at the specified coordinates
     function drawCheckbox(x, y) {
         doc.lineJoin('miter').rect(x, y, 8, 8).stroke();
@@ -236,52 +261,63 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     // Function to add a line of text with checkboxes
     function addCheckboxLine(text, checkboxes) {
         doc.fontSize(7);
-        doc.text(text, { align: 'left' }).moveDown(1);
+        doc.text(text, { align: 'left' }).moveDown(0);
     
         checkboxes.forEach((checkbox) => {
             drawCheckbox(checkbox.x, checkbox.y);
         });
     }
-    
+    doc.moveDown(0.5);
     // First line with warranty options
+    const garantieARText = 'حالة الضمان للمنتوج';
+    const accessoiresARText = 'لواحق';
     addCheckboxLine(
-        'Garantie :                                                     Sous Garantie                                                     Hors Garantie                                                       Sous réserve',
-        [{ x: 210, y: 305 }, { x: 360, y: 305 }, { x: 510, y: 305 }]
+        `Garantie `+`${garantieARText.split(' ').reverse().join(' ')}`+`                            Sous Garantie                                                     Hors Garantie                                                       Sous réserve`,
+        [{ x: 205, y: 329 }, { x: 355, y: 329 }, { x: 505, y: 329 }]
     );
     
     // Second line with accessory options
     addCheckboxLine(
-        'Accessoires :                                  TLC                            Carton                               Pied                            Support Mural                              Sans accessoires',
+        `Accessoires `+`${accessoiresARText.split(' ').reverse().join(' ')}`+`                          TLC                            Carton                               Pied                            Support Mural                              Sans accessoires`,
         [
-            { x: 150, y: 320 },
-            { x: 230, y: 320 },
-            { x: 300, y: 320 },
-            { x: 400, y: 320 },
-            { x: 520, y: 320 },
+            { x: 150, y: 342 },
+            { x: 230, y: 342 },
+            { x: 300, y: 342 },
+            { x: 400, y: 342 },
+            { x: 520, y: 342 },
         ]
     );
     
-    doc.moveDown(1);
+    doc.moveDown(0.5);
     doc.fontSize(7);
+    const CauseAnuulationARText = 'سبب إلغاء الضمان';
     doc.text(`Cause de l’annulation de la garantie :`,{
         align: 'left',
-    }).moveDown(0.5);
-
+    });
+    doc.moveUp();
+    doc.text(`${CauseAnuulationARText.split(' ').reverse().join(' ')}`,{
+        align: 'right',
+    }).moveDown(0);
     // Calculate the width of the text
     const firstLineWidth = doc.widthOfString(`Présence d’insectes`);
     const secondLineWidth = doc.widthOfString(`Présence de moisissure`);
     // Calculate the x-coordinate for centering
     const centerX = (395 - Math.max(firstLineWidth, secondLineWidth)) / 2;
+    const insectARText = 'وجود الحشرات';
+    const moisissureADText = 'وجود الرطوبة';
+    const overtARText = 'ملصق مفتوح ';
+    const dalleARText = ' شاشة مكسورة';
+    const manqueFicheARText = 'غياب ورقة ضمان';
     // Add the text
-    doc.text(`Présence d’insectes`, centerX, doc.y, { align: 'left' });
+    doc.text(`Présence d’insectes `+`${insectARText.split(' ').reverse().join(' ')}`, centerX, doc.y, { align: 'left' });
     doc.moveUp();
-    doc.text(`Présence de moisissure`, (centerX + 200), doc.y, { align: 'left' }).moveDown(0.5);
-    doc.text(`Sticker ouvert`, centerX, doc.y, { align: 'left' });
+    doc.text(`Présence de moisissure `+`${moisissureADText.split(' ').reverse().join(' ')}`, (centerX + 200), doc.y, { align: 'left' }).moveDown(0);
+    doc.text(`Sticker ouvert `+`${overtARText.split(' ').reverse().join(' ')}`, centerX, doc.y, { align: 'left' });
     doc.moveUp();
-    doc.text(`Dalle cassée`, (centerX + 200), doc.y, { align: 'left' }).moveDown(0.5);
-    doc.text(`Manque fiche de garantie`, centerX, doc.y, { align: 'left' });
+    doc.text(`Dalle cassée `+`${dalleARText.split(' ').reverse().join(' ')}`, (centerX + 200), doc.y, { align: 'left' }).moveDown(0);
+    doc.text(`Manque fiche de garantie `+`${manqueFicheARText.split(' ').reverse().join(' ')}`, centerX, doc.y, { align: 'left' });
     doc.moveUp();
-    doc.text(`Autre`, (centerX + 200), doc.y, { align: 'left' });
+    doc.text(`Autre...............`, (centerX + 200), doc.y, { align: 'left' });
     function addCheckboxLine2(checkboxes) {
         checkboxes.forEach((checkbox) => {
             drawCheckbox(checkbox.x, checkbox.y);
@@ -289,19 +325,24 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     }
     addCheckboxLine2(
         [
-            { x: 230, y: 358 },
-            { x: 210, y: 369 },
-            { x: 250, y: 382 },
-            { x: 450, y: 358 },
-            { x: 410, y: 369 },
-            { x: 390, y: 382 },
+            { x: 260, y: 373 },
+            { x: 242, y: 385 },
+            { x: 282, y: 397 },
+            { x: 470, y: 373 },
+            { x: 439, y: 385 },
+            { x: 420, y: 397 },
         ]
     );
-    doc.moveDown(1);
-    const DiagnostiqueText = `Diagnostique initial : ..............................................................................................................................................................................................................................................`;
-    const PrixText = `Prix de réparation estimé  : ..................................................................................................................................................................................................................................`;
-    const DateRecupirationText = `Date de récupération prévisionnelle : `;
-    const lines3 = [DiagnostiqueText, PrixText, DateRecupirationText];
+    doc.moveDown(0.5);
+    const DiagnostiqueARText = 'التشخيص الاولي';
+    const PrixARText = 'السعر التقديري للاصلاح';
+    const DateRecupirationARText = 'التاريخ التقديري للاسترجاع';
+    const ServicesSupplémentairesARText = 'خدمات إضافية ';
+    const DiagnostiqueText = `Diagnostique initial : .................................................................................................................................................................................................... `+` ${DiagnostiqueARText.split(' ').reverse().join(' ')}`;
+    const PrixText = `Prix de réparation estimé  : .....................................................................................................................................................................................` + ` ${PrixARText.split(' ').reverse().join(' ')}`;
+    const DateRecupirationText = `Date de récupération prévisionnelle : ..................................................................................................................................................................... `+` ${DateRecupirationARText.split(' ').reverse().join(' ')}`;
+    const ServicesSupplémentairesTxt = 'Services supplémentaires : '; 
+    const lines3 = [DiagnostiqueText, PrixText, DateRecupirationText, ServicesSupplémentairesTxt];
 
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
@@ -310,36 +351,55 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
         doc.text(lineText,20,doc.y, {
             width: 595,
             align: 'left',
-        }).moveDown(0.5);
+        }).moveDown(0);
     }
     // Add the text
     doc.fontSize(7);
-    doc.text(`01 ........................................................................................................................................................................DA`, 120, doc.y, { align: 'centre',fontWeight: '700' }).moveDown(0.5);
-    doc.text(`02 ........................................................................................................................................................................DA`, 120, doc.y, { align: 'centre',fontWeight: '700' }).moveDown(0.5);
-    doc.text(`Prix Total ..............................................................................................................................................................DA`, 120, doc.y, { align: 'centre',fontWeight: '700' }).moveDown(1);
+    doc.moveUp();
+    const PrixTotal = 'السعر الاجمالي';
+    doc.text(`01 .....................................................................................................................................................................DA           ${ServicesSupplémentairesARText.split(' ').reverse().join(' ')}`, 120, doc.y, { align: 'centre',fontWeight: '700' }).moveDown(0);
+    doc.text(`02 .....................................................................................................................................................................DA`, 120, doc.y, { align: 'centre',fontWeight: '700' }).moveDown(0);
+    doc.text(`Prix Total `+` ${PrixTotal.split(' ').reverse().join(' ')} `+` ...............................................................................................................................DA`, 120, doc.y, { align: 'centre',fontWeight: '700' }).moveDown(0);
     
-    doc.moveDown(1);
+    doc.moveDown(0);
     doc.fontSize(7);
-    doc.text(`Remarque :`,20, doc.y,{
-        align: 'left',
-    }).moveDown(0.5);
+    const ARparagraph1 = ' هذا الوصل هو وثيقة اثبات إيداع المنتوج وال يمكن استرجاع المنتوج من دونه، يمكن تقديم الوصل لشخص اخر السترجاع المنتوج مرفقا بنسخة لبطاقة التعريف الوطنية ';
+    const ARparagraph2 = ' إن وضع المنتج ضمن الفئة )                        ( يعني أن المنتج يمكن أن يكون "تحت الضمان" أو "خارج الضمان" حتى إنشاء التقرير التشخيصي الذي يثبت حالة المنتج ';
+    const ARparagraph3 = ' بموجب أحكام المادة 11 من المرسوم التنفيذي رقم 21-244، لا تتحمل شركة بومار كومباني و/أو وكلاؤها المعتمدين مسؤولية اي منتج تجاوزت مدة يداعه السنة الواحدة';
+    const ARparagraph4 = ' ابتداء من تاريخ الاسترجاع التقديري، وتحتفظ شركة بومار كومباني بحقها في التصرف وفقا لأحكام المادة المذكورة أعلاه ';
+
+    doc.text(`ملاحظة`,{
+        align: 'right',
+    }).moveDown(0);
+    doc.fontSize(6);
+    doc.text(`${ARparagraph1.split(' ').reverse().join(' ')}`,{
+        align: 'right',
+    }).moveDown(0);
+    doc.text(`${ARparagraph2.split(' ').reverse().join(' ')}`,{
+        align: 'right',
+    }).moveDown(0);
+    doc.text(`${ARparagraph3.split(' ').reverse().join(' ')}`,{
+        align: 'right',
+    }).moveDown(0);
+    doc.text(`${ARparagraph4.split(' ').reverse().join(' ')}`,{
+        align: 'right',
+    }).moveDown(0);
+
     const paragraph = '- Ce document prouve le dépôt du produit et ce dernier ne peut être récupéré sans la présentation de ce document. Le produit peut être récupérer par une tierce personne, sous condition de présenté une photocopie de la CNI du déposant. \n - Le placement du produit sous la catégorique (sous réserve) signifie que le produit peut être en ‘’sous garantie’’ ou ‘’hors garantie’’ jusqu’à l’établissement du rapport de diagnostic prouvant l’état du produit. \n - Conformément aux dispositions de l\'article 11 du décret exécutif numéro 21-244, la société BOMARE COMPANY et/ou ses mandataires agréés ne sont pas responsables des produits dont la durée de dépôt a dépassé une année à compter de la date de restitution estimée. BOMARE COMPANY se réserve le droit d\'agir conformément aux dispositions de l\'article susmentionné. \n';
-    doc.fontSize(7);
     doc.text(`${paragraph}`,40, doc.y ,{
         width: 500,
         align: 'left'
     }
     );
-    doc.moveDown(1);
-
+    doc.moveDown(0);
     const paragraph2 = 'Afin de suivre l’état d’avancement de la réparation de votre produit Veuillez scanner le code QR en y insérant votre nom et ID client ou bien de vous connecter à la plateforme via vos identifiants sur le lien suivant: https://sav.streamsystem.com/index.php';
-    doc.fontSize(8);
+    doc.fontSize(7);
     doc.text(`${paragraph2}`,40, doc.y ,{
         width: 500,
         align: 'left'
     }
     );
-    doc.moveDown(1);
+    doc.moveDown(0);
     
     
     const tableArray = {
@@ -365,14 +425,14 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     doc.fontSize(7);
     doc.text(`SAV Bomare Company (Cachet)` ,20, doc.y,{
         align: 'right',
-    }).moveDown(1);
+    }).moveDown(0);
     
-    doc.text(`Pour nous contacter :` ,20, 710,{
+    doc.text(`Pour nous contacter :` ,20, 717,{
         align: 'left',
-    }).moveDown(0.5);
+    }).moveDown(0);
     doc.text(`Écoute client : 0560-012-841 \n E-mail : ecoute.client@bomarecompany.com / Page Facebook : @STREAM` ,40, doc.y,{
         align: 'left',
-    }).moveDown(0.5);
+    }).moveDown(0);
 
     return doc;
 }
@@ -382,15 +442,15 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ty
     doc.text(`Réf : FOR-SAV-20-01`,495,20,{
         align: 'center',
         width: 100,
-    }).moveDown(1.3);
+    }).moveDown(0.1);
     doc.text(`Date d’application`,495,doc.y,{
         align: 'center',
         width: 100,
-    }).moveDown(1);
+    }).moveDown(0);
     doc.text(`03/10/2023`,495,doc.y,{
         align: 'center',
         width: 100,
-    }).moveDown(1.3);
+    }).moveDown(0.1);
     doc.text(`Page 1 sur 9`,495,doc.y,{
         align: 'center',
         width: 100,
@@ -400,33 +460,41 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ty
     doc.text('Bon de livraison', 20, 60,{ 
         width: 595, 
         align: 'center',
-    }).moveDown(2);
-    doc.fontSize(8);
+    }).moveDown(0.8);
+    doc.fontSize(7);
     doc.text(`SAV ${CentreDepot}`,{
         align: 'left',
     });
     doc.moveUp();
-    doc.fontSize(8);
+    doc.fontSize(7);
     doc.text(`Date: ${new Date().toISOString().slice(0, 10)}`,{
         align: 'right',
-    }).moveDown(1);
-    doc.fontSize(8);
+    }).moveDown(0);
+    doc.fontSize(7);
     doc.text(`Ref: ${BonID}`,{
         align: 'left',
-    }).moveDown(1);
+    });
     doc.moveDown();
-    const DateDepotText = `Date de depot : .........................................................................................................................................................................................................................`;
-    const CentreDepotText = `SAV : ........................................................................................................................................................................................................................................`;
-    const EmailText = `ID client : ...................................................................................................................................................................................................................................`;
-    const NomPrenomText = `Nom et prenom : .......................................................................................................................................................................................................................`;
-    const TelephoneText = `N° Tel : .......................................................................................................................................................................................................................................`;
-    const TypePanneText = `Type de panne : .........................................................................................................................................................................................................................`;
+    //arabic
+    const DateDepotARText = 'تاريخ الايداع';
+    const CentreDepotARText = 'مركز خدمة ما بعد البيع';
+    const EmailARText = 'رمز الزبون';
+    const NomPrenomARText = 'الاسم و اللقب';
+    const TelephoneARText = 'رقم الهاتف';
+    const TypePanneARText = 'الإصلاح السابق';
+
+    const DateDepotText = `Date de depot : ..................................................................................................................................................................................................................`+` ${ DateDepotARText.split(' ').reverse().join(' ')}`;
+    const CentreDepotText = `SAV : .....................................................................................................................................................................................................................`+` ${ CentreDepotARText.split(' ').reverse().join(' ')}`;
+    const EmailText = `ID client : .......................................................................................................................................................................................................................... `+` ${ EmailARText.split(' ').reverse().join(' ')}`;
+    const NomPrenomText = `Nom et prenom : ..............................................................................................................................................................................................................`+` ${ NomPrenomARText.split(' ').reverse().join(' ')}`;
+    const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
+    const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
     const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, TypePanne];
     const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, TypePanneText];
-
+    
     // Repeating the above block three times (as in your original code)
-    doc.fontSize(8);
+    doc.fontSize(7);
     for (let i = 0; i < lines2.length; i++) {
         const lineText = lines2[i];
         const lineTitle = lines1[i];
@@ -439,10 +507,10 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ty
         doc.text(lineText, {
             width: 595,
             align: 'left',
-        }).moveDown(0.5);
+        }).moveDown(0);
     }
 
-    doc.moveDown(5);
+    doc.moveDown(3);
 
     
     const tableArray1 = {
@@ -453,7 +521,7 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ty
         ],
     };
     doc.table( tableArray1, { width: 594,
-        columnsSize: [ 50, 80, 100, 100, 100, 100],
+        columnsSize: [ 50, 80, 100, 120, 100, 100],
         hideHeader: true,
         minRowHeight: 20,
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
