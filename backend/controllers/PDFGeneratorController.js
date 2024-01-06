@@ -119,7 +119,7 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Typ
     DateDepot, BonID, NbrSeries) {        
     doc.moveDown();
     doc.fontSize(15);
-    doc.text('Ticket de depot', 20, 90,{ 
+    doc.text('Ticket de depot', 20, 60,{ 
         width: 595, 
         align: 'center',
         fontWeight: '700'
