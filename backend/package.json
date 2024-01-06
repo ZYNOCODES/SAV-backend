@@ -20,7 +20,6 @@
     "express-fileupload": "^1.4.0",
     "express-handlebars": "^7.1.2",
     "html-pdf": "^3.0.1",
-    "html2pdf-ts": "^1.1.1",
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.1",
     "moment": "^2.29.4",
@@ -32,6 +31,7 @@
     "npm": "^10.2.5",
     "path": "^0.12.7",
     "pdfkit": "^0.14.0",
+    "pdfkit-table": "^0.1.99",
     "sequelize": "^6.32.1",
     "uuid": "^9.0.0",
     "validator": "^13.11.0"
