@@ -8,7 +8,9 @@ const PDFGenerator = async (req, res) => {
     const { BonDepot } = req.params;
     const {
         Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, Wilaya, CentreDepot,
-        DateDepot, type, postalCode, NbrSerie, ActinoCorrective, UserID
+        DateDepot, type, postalCode, NbrSerie, ActinoCorrective, UserID,CauseGarentie,
+        sousGarantieChecked,horsGarantieChecked,sousReserveChecked,TLC,Carton,Pied,
+        SupportMural,Sansaccessoires,
     } = req.body;
 
     const pdfTemplate = require(`../documents/${BonDepot}`);
@@ -41,7 +43,8 @@ const PDFGenerator = async (req, res) => {
 
         (BonDepot == 'BonV1') ? TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
             DateDepot, BonID, NbrSeries) : (BonDepot == 'BonV3') ? BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
-                DateDepot, BonID, NbrSeries) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
+                DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
+                Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
                     DateDepot, BonID, NbrSeries);
         
         
@@ -173,7 +176,8 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Typ
     return doc;
 }
 function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
-    DateDepot, BonID, NbrSeries) {        
+    DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
+    Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) {        
     doc.fontSize(8);
     doc.text(`Réf : FOR-SAV-24-03`,495,20,{
         align: 'center',
@@ -222,7 +226,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     const TelephoneARText = 'رقم الهاتف';
     const ReferanceProduitARText = 'المنتوج';
     const NbrSerieARText = 'الرقم التسلسلي';
-    const TypePanneARText = 'الإصلاح السابق';
+    const HistoriqueProductARText = 'الإصلاح السابق';
 
     const DateDepotText = `Date de depot : ..................................................................................................................................................................................................................`+` ${ DateDepotARText.split(' ').reverse().join(' ')}`;
     const CentreDepotText = `SAV : .....................................................................................................................................................................................................................`+` ${ CentreDepotARText.split(' ').reverse().join(' ')}`;
@@ -231,10 +235,11 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
     const ReferanceProduitText = `Produit : ................................................................................................................................................................................................................................ `+` ${ ReferanceProduitARText.split(' ').reverse().join(' ')}`;
     const NbrSerieText = `N° série : ........................................................................................................................................................................................................................ `+` ${ NbrSerieARText.split(' ').reverse().join(' ')}`;
-    const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
+    const HistoriqueProductText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ HistoriqueProductARText.split(' ').reverse().join(' ')}`;
+
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, NbrSeries, TypePanne];
-    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, NbrSerieText, TypePanneText];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, NbrSeries];
+    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, NbrSerieText];
     
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
@@ -254,37 +259,65 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     }
 
     // Function to draw a checkbox at the specified coordinates
-    function drawCheckbox(x, y) {
-        doc.lineJoin('miter').rect(x, y, 8, 8).stroke();
+    function drawCheckbox(x, y, Etat) {
+        Etat ? doc.lineJoin('miter').rect(x, y, 8, 8).fill('black') : doc.lineJoin('miter').rect(x, y, 8, 8).stroke();
     }
-    
+    function drawCheckboxChecked(x, y) {
+        doc.fontSize(10);
+        doc.text(`X`, x, y,{ 
+            align: 'center',
+        }).moveUp();
+    }
     // Function to add a line of text with checkboxes
-    function addCheckboxLine(text, checkboxes) {
+    function addGarentieCheckbox(text, checkboxes) {
         doc.fontSize(7);
         doc.text(text, { align: 'left' }).moveDown(0);
-    
+        //garantie
+        sousGarantieChecked ? 
+        checkboxes[0].Etat = true : 
+        horsGarantieChecked ? 
+        checkboxes[2].Etat = true : 
+        sousReserveChecked ? 
+        checkboxes[1].Etat = true : null;
+
         checkboxes.forEach((checkbox) => {
-            drawCheckbox(checkbox.x, checkbox.y);
+            drawCheckbox(checkbox.x, checkbox.y, checkbox.Etat);
         });
     }
     doc.moveDown(0.5);
     // First line with warranty options
     const garantieARText = 'حالة الضمان للمنتوج';
     const accessoiresARText = 'لواحق';
-    addCheckboxLine(
+    addGarentieCheckbox(
         `Garantie `+`${garantieARText.split(' ').reverse().join(' ')}`+`                            Sous Garantie                                                     Hors Garantie                                                       Sous réserve`,
-        [{ x: 205, y: 329 }, { x: 355, y: 329 }, { x: 505, y: 329 }]
+        [
+            { Etat: false, x: 205, y: 304 }, 
+            { Etat: false, x: 355, y: 304 }, 
+            { Etat: false, x: 505, y: 304 }
+        ]
     );
-    
+    function addAccessoirCheckbox(text, checkboxes) {
+        doc.fontSize(7);
+        doc.text(text, { align: 'left' }).moveDown(0);
+        //accessoires
+        TLC ? checkboxes[0].Etat = true : null;
+        Carton ? checkboxes[1].Etat = true : null;
+        Pied ? checkboxes[2].Etat = true : null;
+        SupportMural ? checkboxes[3].Etat = true : null;
+        Sansaccessoires ? checkboxes[4].Etat = true : null;
+        checkboxes.forEach((checkbox) => {
+            drawCheckbox(checkbox.x, checkbox.y,checkbox.Etat);
+        });
+    }
     // Second line with accessory options
-    addCheckboxLine(
+    addAccessoirCheckbox(
         `Accessoires `+`${accessoiresARText.split(' ').reverse().join(' ')}`+`                          TLC                            Carton                               Pied                            Support Mural                              Sans accessoires`,
         [
-            { x: 150, y: 342 },
-            { x: 230, y: 342 },
-            { x: 300, y: 342 },
-            { x: 400, y: 342 },
-            { x: 520, y: 342 },
+            { Etat: false, x: 150, y: 318 },
+            { Etat: false, x: 230, y: 318 },
+            { Etat: false, x: 300, y: 318 },
+            { Etat: false, x: 400, y: 318 },
+            { Etat: false, x: 520, y: 318 },
         ]
     );
     
@@ -319,18 +352,40 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     doc.moveUp();
     doc.text(`Autre...............`, (centerX + 200), doc.y, { align: 'left' });
     function addCheckboxLine2(checkboxes) {
+        switch(CauseGarentie){
+            case 'Présence d’insectes':
+                checkboxes[0].Etat = true;
+                break;
+            case 'Présence de moisissure':
+                checkboxes[3].Etat = true;
+                break;
+            case 'Sticker ouvert':
+                checkboxes[1].Etat = true;
+                break;
+            case 'Dalle cassée':
+                checkboxes[4].Etat = true;
+                break;
+            case 'Manque fiche de garantie':
+                checkboxes[2].Etat = true;
+                break;
+            case 'Autre':
+                checkboxes[5].Etat = true;
+                break;
+            default:
+                break;
+        };
         checkboxes.forEach((checkbox) => {
-            drawCheckbox(checkbox.x, checkbox.y);
+            drawCheckbox(checkbox.x, checkbox.y, checkbox.Etat);
         });
     }
     addCheckboxLine2(
         [
-            { x: 260, y: 373 },
-            { x: 242, y: 385 },
-            { x: 282, y: 397 },
-            { x: 470, y: 373 },
-            { x: 439, y: 385 },
-            { x: 420, y: 397 },
+            { Etat: false, x: 260, y: 348 },
+            { Etat: false, x: 242, y: 360 },
+            { Etat: false, x: 282, y: 372 },
+            { Etat: false, x: 470, y: 348 },
+            { Etat: false, x: 439, y: 360 },
+            { Etat: false, x: 420, y: 372 },
         ]
     );
     doc.moveDown(0.5);
@@ -342,7 +397,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     const PrixText = `Prix de réparation estimé  : .....................................................................................................................................................................................` + ` ${PrixARText.split(' ').reverse().join(' ')}`;
     const DateRecupirationText = `Date de récupération prévisionnelle : ..................................................................................................................................................................... `+` ${DateRecupirationARText.split(' ').reverse().join(' ')}`;
     const ServicesSupplémentairesTxt = 'Services supplémentaires : '; 
-    const lines3 = [DiagnostiqueText, PrixText, DateRecupirationText, ServicesSupplémentairesTxt];
+    const lines3 = [HistoriqueProductText, DiagnostiqueText, PrixText, DateRecupirationText, ServicesSupplémentairesTxt];
 
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
