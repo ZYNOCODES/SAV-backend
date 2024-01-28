@@ -10,7 +10,7 @@ const PDFGenerator = async (req, res) => {
         Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, Wilaya, CentreDepot,
         DateDepot, type, postalCode, NbrSerie, ActinoCorrective, UserID,CauseGarentie,
         sousGarantieChecked,horsGarantieChecked,sousReserveChecked,TLC,Carton,Pied,
-        SupportMural,Sansaccessoires,
+        SupportMural,Sansaccessoires,Observation
     } = req.body;
 
     const pdfTemplate = require(`../documents/${BonDepot}`);
@@ -45,7 +45,7 @@ const PDFGenerator = async (req, res) => {
             DateDepot, BonID, NbrSeries) : (BonDepot == 'BonV3') ? BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
                 DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
                 Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
-                    DateDepot, BonID, NbrSeries);
+                    DateDepot, BonID, NbrSeries, Observation);
         
         
         //add bottom image
@@ -273,13 +273,10 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
         doc.fontSize(7);
         doc.text(text, { align: 'left' }).moveDown(0);
         //garantie
-        sousGarantieChecked ? 
-        checkboxes[0].Etat = true : 
-        horsGarantieChecked ? 
-        checkboxes[2].Etat = true : 
-        sousReserveChecked ? 
-        checkboxes[1].Etat = true : null;
-
+        sousGarantieChecked == true ? checkboxes[0].Etat = true : 
+        horsGarantieChecked == true ? checkboxes[1].Etat = true : 
+        sousReserveChecked == true ? checkboxes[2].Etat = true : null;
+        
         checkboxes.forEach((checkbox) => {
             drawCheckbox(checkbox.x, checkbox.y, checkbox.Etat);
         });
@@ -291,9 +288,9 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     addGarentieCheckbox(
         `Garantie `+`${garantieARText.split(' ').reverse().join(' ')}`+`                            Sous Garantie                                                     Hors Garantie                                                       Sous réserve`,
         [
-            { Etat: false, x: 205, y: 304 }, 
-            { Etat: false, x: 355, y: 304 }, 
-            { Etat: false, x: 505, y: 304 }
+            { Etat: false, x: 205, y: 306 }, 
+            { Etat: false, x: 355, y: 306 }, 
+            { Etat: false, x: 505, y: 306 }
         ]
     );
     function addAccessoirCheckbox(text, checkboxes) {
@@ -380,12 +377,12 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     }
     addCheckboxLine2(
         [
-            { Etat: false, x: 260, y: 348 },
-            { Etat: false, x: 242, y: 360 },
-            { Etat: false, x: 282, y: 372 },
-            { Etat: false, x: 470, y: 348 },
-            { Etat: false, x: 439, y: 360 },
-            { Etat: false, x: 420, y: 372 },
+            { Etat: false, x: 260, y: 350 },
+            { Etat: false, x: 242, y: 362 },
+            { Etat: false, x: 282, y: 374 },
+            { Etat: false, x: 470, y: 350 },
+            { Etat: false, x: 439, y: 362 },
+            { Etat: false, x: 420, y: 374 },
         ]
     );
     doc.moveDown(0.5);
@@ -492,7 +489,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
     return doc;
 }
 function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
-    DateDepot, BonID, NbrSeries) {        
+    DateDepot, BonID, NbrSeries, Observation) {        
     doc.fontSize(8);
     doc.text(`Réf : FOR-SAV-20-01`,495,20,{
         align: 'center',
@@ -572,7 +569,7 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ty
         headers: ["", " ", "", "", " ", ""],
         rows: [
             ["Item", "Désignation", "Modèle", "N° série", "Observation", "Montant à payer"],
-          ["1", " ", ReferanceProduit, NbrSeries, " ", " "],
+          ["1", " ", ReferanceProduit, NbrSeries, Observation, " "],
         ],
     };
     doc.table( tableArray1, { width: 594,
