@@ -14,7 +14,12 @@ const requireAuth = async (req, res, next) => {
 
     try{
         // Verify token
-        const {id} = jwt.verify(token, process.env.SECRET_KEY);
+        const { id, exp } = jwt.verify(token, process.env.SECRET_KEY);
+
+        // Check if the token has expired
+        if (Date.now() >= exp * 1000) {
+            return res.status(401).json({ error: "Token has expired. Please log in again." });
+        }
         // Add user to request
         req.user = await User.findByPk(id);
         // Continue to next middleware
