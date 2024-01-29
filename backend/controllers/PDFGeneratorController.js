@@ -8,9 +8,9 @@ const PDFGenerator = async (req, res) => {
     const { BonDepot } = req.params;
     const {
         Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, Wilaya, CentreDepot,
-        DateDepot, type, postalCode, NbrSerie, ActinoCorrective, UserID,CauseGarentie,
-        sousGarantieChecked,horsGarantieChecked,sousReserveChecked,TLC,Carton,Pied,
-        SupportMural,Sansaccessoires,Observation
+        DateDepot, type, postalCode, NbrSerie, ActinoCorrective, UserID, CauseGarentie,
+        sousGarantieChecked, horsGarantieChecked, sousReserveChecked, TLC, Carton, Pied,
+        SupportMural, Sansaccessoires, Observation
     } = req.body;
 
     const pdfTemplate = require(`../documents/${BonDepot}`);
@@ -41,10 +41,10 @@ const PDFGenerator = async (req, res) => {
         const fontPath = path.join(__dirname, '..', 'fonts', 'Amiri-Bold.ttf');
         doc.font(fontPath).fillColor("black");
 
-        (BonDepot == 'BonV1') ? TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
-            DateDepot, BonID, NbrSeries) : (BonDepot == 'BonV3') ? BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
+        (BonDepot == 'BonV1') ? TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
+            DateDepot, BonID, NbrSeries) : (BonDepot == 'BonV3') ? BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
                 DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
-                Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
+                Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
                     DateDepot, BonID, NbrSeries, Observation);
         
         
@@ -121,7 +121,7 @@ function generateUniqueID(type, willaya, postalCode) {
   
     return uniqueID;
 }
-function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
+function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
     DateDepot, BonID, NbrSeries) {        
     doc.moveDown();
     doc.fontSize(15);
@@ -153,7 +153,7 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Typ
     const ReferanceProduitText = `Produit : ................................................................................................................................................................................................................................ `+` ${ ReferanceProduitARText.split(' ').reverse().join(' ')}`;
     const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, TypePanne];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, "."];
     const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, TypePanneText];
     
     // Repeating the above block three times (as in your original code)
@@ -175,7 +175,7 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Typ
   
     return doc;
 }
-function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
+function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
     DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
     Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) {        
     doc.fontSize(8);
@@ -488,7 +488,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePa
 
     return doc;
 }
-function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, TypePanne, CentreDepot,
+function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
     DateDepot, BonID, NbrSeries, Observation) {        
     doc.fontSize(8);
     doc.text(`Réf : FOR-SAV-20-01`,495,20,{
@@ -533,17 +533,17 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ty
     const EmailARText = 'رمز الزبون';
     const NomPrenomARText = 'الاسم و اللقب';
     const TelephoneARText = 'رقم الهاتف';
-    const TypePanneARText = 'الإصلاح السابق';
+    const HistoriqueProduitARText = 'الإصلاح السابق';
 
     const DateDepotText = `Date de depot : ..................................................................................................................................................................................................................`+` ${ DateDepotARText.split(' ').reverse().join(' ')}`;
     const CentreDepotText = `SAV : .....................................................................................................................................................................................................................`+` ${ CentreDepotARText.split(' ').reverse().join(' ')}`;
     const EmailText = `ID client : .......................................................................................................................................................................................................................... `+` ${ EmailARText.split(' ').reverse().join(' ')}`;
     const NomPrenomText = `Nom et prenom : ..............................................................................................................................................................................................................`+` ${ NomPrenomARText.split(' ').reverse().join(' ')}`;
     const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
-    const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
+    const HistoriqueProduitText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ HistoriqueProduitARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, TypePanne];
-    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, TypePanneText];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, "."];
+    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, HistoriqueProduitText];
     
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
