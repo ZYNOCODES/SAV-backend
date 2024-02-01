@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const validator = require('validator');
 const { moveUp } = require('pdfkit');
+const { GetPenultimateByRefProduct } = require('./PannesController');
 
 const PDFGenerator = async (req, res) => {
     const { BonDepot } = req.params;
@@ -16,6 +17,7 @@ const PDFGenerator = async (req, res) => {
     const pdfTemplate = require(`../documents/${BonDepot}`);
     const BonID = generateUniqueID(type, Wilaya, postalCode);
     const NbrSeries = NbrSerie ? NbrSerie : ' ';
+    const HistoriqueProduct = await GetPenultimateByRefProduct(ReferanceProduit);
 
     try {
         if (NbrSerie !== undefined && ((type === 'BL' && ActinoCorrective === false) || validator.isEmpty(NbrSerie))) {
@@ -44,8 +46,8 @@ const PDFGenerator = async (req, res) => {
         (BonDepot == 'BonV1') ? TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
             DateDepot, BonID, NbrSeries) : (BonDepot == 'BonV3') ? BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
                 DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
-                Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
-                    DateDepot, BonID, NbrSeries, Observation);
+                Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie, TypePanne, HistoriqueProduct) : BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
+                    DateDepot, BonID, NbrSeries, Observation, HistoriqueProduct);
         
         
         //add bottom image
@@ -177,7 +179,7 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Cen
 }
 function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
     DateDepot, BonID, NbrSeries, sousGarantieChecked, sousReserveChecked, horsGarantieChecked, TLC,
-    Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie) {        
+    Carton, Pied, SupportMural, Sansaccessoires, CauseGarentie, TypePanne, HistoriqueProduct) {        
     doc.fontSize(8);
     doc.text(`Réf : FOR-SAV-24-03`,495,20,{
         align: 'center',
@@ -216,7 +218,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
     doc.fontSize(7);
     doc.text(`Ref: ${BonID}`,{
         align: 'right',
-    }).moveDown(0);
+    }).moveDown(1.5);
 
     //arabic
     const DateDepotARText = 'تاريخ الايداع';
@@ -250,7 +252,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
         doc.text(lineTitle, {
             width: 595,
             align: 'center',
-        }).moveDown(0);
+        }).moveUp(0.5);
 
         doc.text(lineText, {
             width: 595,
@@ -288,9 +290,9 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
     addGarentieCheckbox(
         `Garantie `+`${garantieARText.split(' ').reverse().join(' ')}`+`                            Sous Garantie                                                     Hors Garantie                                                       Sous réserve`,
         [
-            { Etat: false, x: 205, y: 306 }, 
-            { Etat: false, x: 355, y: 306 }, 
-            { Etat: false, x: 505, y: 306 }
+            { Etat: false, x: 205, y: 281 }, 
+            { Etat: false, x: 355, y: 281 }, 
+            { Etat: false, x: 505, y: 281 }
         ]
     );
     function addAccessoirCheckbox(text, checkboxes) {
@@ -310,11 +312,11 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
     addAccessoirCheckbox(
         `Accessoires `+`${accessoiresARText.split(' ').reverse().join(' ')}`+`                          TLC                            Carton                               Pied                            Support Mural                              Sans accessoires`,
         [
-            { Etat: false, x: 150, y: 318 },
-            { Etat: false, x: 230, y: 318 },
-            { Etat: false, x: 300, y: 318 },
-            { Etat: false, x: 400, y: 318 },
-            { Etat: false, x: 520, y: 318 },
+            { Etat: false, x: 150, y: 293 },
+            { Etat: false, x: 230, y: 293 },
+            { Etat: false, x: 300, y: 293 },
+            { Etat: false, x: 400, y: 293 },
+            { Etat: false, x: 520, y: 293 },
         ]
     );
     
@@ -377,12 +379,12 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
     }
     addCheckboxLine2(
         [
-            { Etat: false, x: 260, y: 350 },
-            { Etat: false, x: 242, y: 362 },
-            { Etat: false, x: 282, y: 374 },
-            { Etat: false, x: 470, y: 350 },
-            { Etat: false, x: 439, y: 362 },
-            { Etat: false, x: 420, y: 374 },
+            { Etat: false, x: 260, y: 325 },
+            { Etat: false, x: 242, y: 337 },
+            { Etat: false, x: 282, y: 349 },
+            { Etat: false, x: 470, y: 325 },
+            { Etat: false, x: 439, y: 337 },
+            { Etat: false, x: 420, y: 349 },
         ]
     );
     doc.moveDown(0.5);
@@ -394,10 +396,28 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
     const PrixText = `Prix de réparation estimé  : .....................................................................................................................................................................................` + ` ${PrixARText.split(' ').reverse().join(' ')}`;
     const DateRecupirationText = `Date de récupération prévisionnelle : ..................................................................................................................................................................... `+` ${DateRecupirationARText.split(' ').reverse().join(' ')}`;
     const ServicesSupplémentairesTxt = 'Services supplémentaires : '; 
-    const lines3 = [HistoriqueProductText, DiagnostiqueText, PrixText, DateRecupirationText, ServicesSupplémentairesTxt];
+    const lines3 = [PrixText, DateRecupirationText, ServicesSupplémentairesTxt];
 
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
+    console.log(HistoriqueProduct);
+    console.log("-------------------------------------------------------------");
+    doc.text(HistoriqueProduct,20,doc.y, {
+        width: 595,
+        align: 'center',
+    }).moveUp(0.8);
+    doc.text(HistoriqueProductText,20,doc.y, {
+        width: 595,
+        align: 'left',
+    }).moveDown(0);
+    doc.text(TypePanne,20,doc.y, {
+        width: 595,
+        align: 'center',
+    }).moveUp(0.8);
+    doc.text(DiagnostiqueText, {
+        width: 595,
+        align: 'left',
+    }).moveDown(0);
     for (let i = 0; i < lines3.length; i++) {
         const lineText = lines3[i];
         doc.text(lineText,20,doc.y, {
@@ -489,7 +509,7 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
     return doc;
 }
 function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, CentreDepot,
-    DateDepot, BonID, NbrSeries, Observation) {        
+    DateDepot, BonID, NbrSeries, Observation, HistoriqueProduct) {        
     doc.fontSize(8);
     doc.text(`Réf : FOR-SAV-20-01`,495,20,{
         align: 'center',
@@ -542,7 +562,7 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ce
     const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
     const HistoriqueProduitText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ HistoriqueProduitARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, "."];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, HistoriqueProduct];
     const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, HistoriqueProduitText];
     
     // Repeating the above block three times (as in your original code)
@@ -554,12 +574,12 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ce
         doc.text(lineTitle, {
             width: 595,
             align: 'center',
-        }).moveDown(0);
+        }).moveUp(0.5);
 
         doc.text(lineText, {
             width: 595,
             align: 'left',
-        }).moveDown(0);
+        }).moveDown(0.3);
     }
 
     doc.moveDown(3);
@@ -569,7 +589,7 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ce
         headers: ["", " ", "", "", " ", ""],
         rows: [
             ["Item", "Désignation", "Modèle", "N° série", "Observation", "Montant à payer"],
-          ["1", " ", ReferanceProduit, NbrSeries, Observation, " "],
+          ["1", " ", ReferanceProduit, NbrSeries, (Observation ?? "") , " "],
         ],
     };
     doc.table( tableArray1, { width: 594,
@@ -602,6 +622,7 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ce
 
     return doc;
 }
+
 module.exports = {
     PDFGenerator,
     PDFSender,

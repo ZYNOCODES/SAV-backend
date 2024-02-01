@@ -160,6 +160,37 @@ const GetByRefProduct = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
+async function GetPenultimateByRefProduct (Ref) {  
+  try {
+      // Find the last panne with the specified reference
+      const lastPanne = await Panne.findOne({
+          where: {
+          ReferanceProduit: Ref,
+          },
+          order: [['DateDepot', 'DESC']], // Order by createdAt in descending order to get the last entered panne
+      });
+  
+      // Find the panne before the last one (penultimate)
+      const penultimatePanne = await Panne.findOne({
+          where: {
+          ReferanceProduit: Ref,
+          FinReparation: {
+              [Op.lt]: lastPanne.DateDepot, // Use less than to get entries before the last panne
+          },
+          },
+          order: [['DateDepot', 'DESC']], // Order by createdAt in descending order to get the penultimate panne
+      });
+  
+      if (!penultimatePanne || !lastPanne) {
+          return "Pas de réparations antérieures";
+      }
+      
+      return penultimatePanne.TypePanne;
+  } catch (error) {
+    console.error(error);
+    return "Pas de réparations antérieures";
+  }
+}
 const GetByBon = async (req, res) => {
   const { BonRef } = req.params;
 
@@ -1200,5 +1231,6 @@ module.exports = {
   calculateAverageRepairTime,
   UpdateNbrserie,
   UpdateSuspendedStatus,
-  UpdateActionCorrective
+  UpdateActionCorrective,
+  GetPenultimateByRefProduct,
 };
