@@ -14,7 +14,7 @@ router.use(requireAuth);
 router.get('/', GetAll);
 router.get('/Suspended', GetAllSuspended);
 router.get('/:centre', GetAllByCentre);
-router.get('/current/week', GetByWeek);
+router.get('/current/week', GetByWeek); 
 router.get('/current/month', GetByMonth);
 router.get('/current/year', GetByYear);
 module.exports = router;

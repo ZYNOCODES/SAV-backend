@@ -1,12 +1,8 @@
 require('dotenv').config();
 
 const express = require('express');
-const exphbs = require('express-handlebars'); // updated to 6.0.X
-const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const path = require('path');
-const multer = require('multer');
-const bodyparser = require('body-parser');
 const sequelize = require('./config/Database');
 const PannesRoute = require('./routes/PannesRoute');
 const UserRoute = require('./routes/users');
@@ -27,10 +23,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use((req, res, next) => {
-  console.log(req.path, req.method);
-  next();
-});
 app.use("/images", express.static("./images"))
 app.use(express.static("./public/build"));
 

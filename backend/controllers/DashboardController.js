@@ -13,11 +13,10 @@ const GetAll = async (req, res) => {
                 createdAt: todayDate
             }
         });
-        if (dashboard) {
-          res.status(200).json({Dashboard : dashboard});
-        }else{
-          res.json({message: 'No dashboard found'});
+        if (!dashboard) {
+            return res.status(400).json({message: 'No dashboard found'});
         }
+        res.status(200).json({Dashboard : dashboard});
     } catch (error) {
         console.error(error);
         res.status(500).send('Error getting dashboard');
