@@ -400,16 +400,6 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
 
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
-    console.log(HistoriqueProduct);
-    console.log("-------------------------------------------------------------");
-    doc.text(HistoriqueProduct,20,doc.y, {
-        width: 595,
-        align: 'center',
-    }).moveUp(0.8);
-    doc.text(HistoriqueProductText,20,doc.y, {
-        width: 595,
-        align: 'left',
-    }).moveDown(0);
     doc.text(TypePanne,20,doc.y, {
         width: 595,
         align: 'center',
@@ -562,8 +552,8 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ce
     const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
     const HistoriqueProduitText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ HistoriqueProduitARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, HistoriqueProduct];
-    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, HistoriqueProduitText];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone];
+    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText];
     
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
