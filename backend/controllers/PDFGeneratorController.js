@@ -155,7 +155,7 @@ function TicketDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Cen
     const ReferanceProduitText = `Produit : ................................................................................................................................................................................................................................ `+` ${ ReferanceProduitARText.split(' ').reverse().join(' ')}`;
     const TypePanneText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ TypePanneARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, "."];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, ReferanceProduit, "/"];
     const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, ReferanceProduitText, TypePanneText];
     
     // Repeating the above block three times (as in your original code)
@@ -400,6 +400,14 @@ function BonDeDepot(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Centre
 
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
+    doc.text("/",20,doc.y, {
+        width: 595,
+        align: 'center',
+    }).moveUp(0.5);
+    doc.text(HistoriqueProductText, {
+        width: 595,
+        align: 'left',
+    }).moveDown(0);
     doc.text(TypePanne,20,doc.y, {
         width: 595,
         align: 'center',
@@ -552,8 +560,8 @@ function BonDeLivraison(doc, Nom, Prenom, Email, Telephone, ReferanceProduit, Ce
     const TelephoneText = `N° Tel : ............................................................................................................................................................................................................................. `+` ${ TelephoneARText.split(' ').reverse().join(' ')}`;
     const HistoriqueProduitText = `Historique du produit : ................................................................................................................................................................................................... `+` ${ HistoriqueProduitARText.split(' ').reverse().join(' ')}`;
     const NomPrenom = `${Nom}${' '}${Prenom}`
-    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone];
-    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText];
+    const lines1 = [DateDepot, CentreDepot, Email, NomPrenom, Telephone, "/"];
+    const lines2 = [DateDepotText, CentreDepotText, EmailText, NomPrenomText, TelephoneText, HistoriqueProduitText];
     
     // Repeating the above block three times (as in your original code)
     doc.fontSize(7);
